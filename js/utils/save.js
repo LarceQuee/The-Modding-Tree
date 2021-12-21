@@ -197,7 +197,7 @@ function load() {
 		loadOptions();
 	}
 
-	if (player.offlineProd) {
+	if (options.offlineProd) {
 		if (player.offTime === undefined)
 			player.offTime = { remain: 0 };
 		player.offTime.remain += (Date.now() - player.time) / 1000;
@@ -223,6 +223,7 @@ function loadOptions() {
 	else 
 		options = getStartOptions()
 	if (themes.indexOf(options.theme) < 0) theme = "default"
+	fixData(options, getStartOptions())
 
 }
 
