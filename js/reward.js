@@ -18,7 +18,7 @@ const RANKS = {
             return player.m.buyables[11].gte(3)
         },
         info() {
-            return `Increase the acceleration and maximum velocity by 10% for each rank up.<br>Currently: ${formatWhole(this.effect())}x`
+            return `Increase the acceleration and maximum velocity by 10% for each rank up.<br>Currently: ${format(this.effect())}x`
         }
     },
     rank_4: {
