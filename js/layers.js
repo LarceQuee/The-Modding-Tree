@@ -1,28 +1,125 @@
-addLayer("p", {
-    name: "prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+addLayer("m", {
+    name: "main", 
+    symbol: "M", 
+    position: 0, 
     startData() { return {
         unlocked: true,
-		points: new Decimal(0),
+        distance: new Decimal(0),
+        currentVelocity: new Decimal(0)
     }},
-    color: "#4BDC13",
-    requires: new Decimal(10), // Can be a function that takes requirement increases into account
-    resource: "prestige points", // Name of prestige currency
-    baseResource: "points", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
-    gainMult() { // Calculate the multiplier for main currency from bonuses
-        mult = new Decimal(1)
-        return mult
+    tooltip: "Main",
+    maxVel() {
+        return calcMaxVelocity()
     },
-    gainExp() { // Calculate the exponent on main currency from bonuses
-        return new Decimal(1)
+    acc() {
+        return calcAcceleration()
     },
-    row: 0, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-        {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    update(diff) {
+        player[this.layer].currentVelocity = player[this.layer].currentVelocity.plus(calcAcceleration().times(diff)).min(calcMaxVelocity())
+        player[this.layer].distance = player[this.layer].distance.plus(player[this.layer].currentVelocity.times(diff))
+    },
+    buyables: {
+        11: {
+            title() {
+                return `Rank ${formatWhole(player[this.layer].buyables[this.id])}`
+            },
+            display() {
+                return `Reset your journey,<br>but rank up.<br>Req: ${format(this.cost())} distance.`
+            },
+            cost(x) {
+                return new Decimal(getRankBaseCost()).times(Decimal.pow(2,x.div(getRankFP()).max(1).sub(1).pow(2)))
+            },
+            amount() {
+                player.m.buyables[11] = player.m.buyables[11].max(1)
+            },
+            canAfford() {
+                return player[this.layer].distance.gte(this.cost())
+            },
+            buy() {
+                player[this.layer].distance.mag = 0
+                player[this.layer].currentVelocity.mag = 0
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            }
+        },
+        12: {
+            title() {
+                return `Tier ${formatWhole(player[this.layer].buyables[this.id])}`
+            },
+            display() {
+                return `Reset your ranks,<br>but tier up.<br>Req: Rank ${this.cost()}.`
+            },
+            cost(x) {
+                return new Decimal(getTierBaseCost()).plus(x.pow(getTierFP()).pow(2))
+            },
+            canAfford() {
+                return player[this.layer].buyables[11].gte(this.cost())
+            },
+            buy() {
+                player[this.layer].distance.mag = 0
+                player[this.layer].currentVelocity.mag = 0
+                player[this.layer].buyables[11] = decimalOne
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            }
+        }
+    },
+    tabFormat: [
+        ["display-text", 
+        function() {
+            return `You have gone a total of ${format(player[this.layer].distance)} (+${format(player[this.layer].currentVelocity)} /sec).`
+        }],
+        ["display-text", 
+        function() {
+            return `You current velocity is ${format(player[this.layer].currentVelocity)} /s (+${format(calcAcceleration())} /sec). (Maximum Velocity: ${format(calcMaxVelocity())} /s).`
+        }],
+        ["display-text", 
+        function() {
+            return `You current acceleration is ${format(calcAcceleration())} /s<sup>2</sup>.`
+        }],
+        "blank",
+        "buyables"
     ],
+    color: "#4BDC13",
+    row: 0, 
     layerShown(){return true}
+})
+
+addLayer("r", {
+    name: "rewards",
+    symbol: "R",
+    row: "side",
+    tooltip: "Rewards",
+    tabFormat: {
+        "Rank": {
+            content: [
+                "blank",
+                ["raw-html", function() {
+                    let html = ""
+                    for (let id in RANKS) {
+                        let data = RANKS[id];
+                        if (data.display) if (data.display()) {
+                            html += "<div><h3>"+data.title+"</h3><br>"+data.info();
+                            html += "</div><br><br>"
+                        }
+                    }
+                    return html
+                }]
+            ]
+        },
+        "Tier": {
+            content: [
+                "blank",
+                ["raw-html", function() {
+                    let html = ""
+                    for (let id in TIERS) {
+                        let data = TIERS[id];
+                        if (data.display) if (data.display()) {
+                            html += "<div><h3>"+data.title+"</h3><br>"+data.info();
+                            html += "</div><br><br>"
+                        }
+                    }
+                    return html
+                }]
+            ]
+        }
+    }
 })
