@@ -109,3 +109,19 @@ function invertOOM(x){
 
     return x
 }
+
+function formatDistance(m) {
+    m = new Decimal(m)
+    if (m < 1000) return format(m) + ' m'
+    else if (m < 1000000) return format(m.div(1000)) + ' km'
+    else if (m < 1e9) return format(m.div(1e6)) + ' Mm'
+    else if (m < 1e12) return format(m.div(1e9)) + ' Gm'
+    else if (m < 1e15) return format(m.div(1e12)) + ' Tm'
+    else if (m < 9.461e15) return format(m.div(1e15)) + ' ly'
+    else if (m < 3.086e16) return format(m.div(9.461e15)) + ' pc'
+    else if (m < 3.086e19) return format(m.div(3.086e16)) + ' kpc'
+    else if (m < 3.086e22) return format(m.div(3.086e19)) + ' Mpc'
+    else if (m < 3.086e25) return format(m.div(3.086e22)) + ' Gpc'
+    else /*if (m < 4.4e26)*/ return format(m.div(3.086e25)) + ' uni'
+    //return format(m.div("e1e9")) + ' mlt'
+}

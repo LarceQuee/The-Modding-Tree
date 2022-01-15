@@ -76,6 +76,18 @@ const RANKS = {
         info() {
             return `Double your acceleration.`
         }
+    },
+    rank_15: {
+        title: `Rank 15`,
+        effect() {
+            return new Decimal(player.r.buyables[11].plus(1)).pow(1.6)
+        },
+        display() {
+            return player.m.buyables[11].gte(15)
+        },
+        info() {
+            return `Multiply your acceleration & maximum velocity by (n+1)^1.6, where <i>n</i> is your rocket fuel.<br>Currently: ${format(this.effect())}`
+        }
     }
 }
 const TIERS = {

@@ -7,7 +7,9 @@ addLayer("m", {
         distance: new Decimal(0),
         currentVelocity: new Decimal(0)
     }},
-    tooltip: "Main",
+    tooltip() {
+        return `Main<br>${formatDistance(player[this.layer].distance)}<br>${player[this.layer].buyables[11]} Rank | ${player[this.layer].buyables[12]} Tier`
+    },
     maxVel() {
         return calcMaxVelocity()
     },
@@ -24,7 +26,7 @@ addLayer("m", {
                 return `Rank ${formatWhole(player[this.layer].buyables[this.id])}`
             },
             display() {
-                return `Reset your journey,<br>but rank up.<br>Req: ${format(this.cost())} distance.`
+                return `Reset your journey,<br>but rank up.<br>Req: ${formatDistance(this.cost())}.`
             },
             cost(x) {
                 return new Decimal(getRankBaseCost()).times(Decimal.pow(2,x.div(getRankFP()).max(1).sub(1).pow(2)))
@@ -65,27 +67,27 @@ addLayer("m", {
     tabFormat: [
         ["display-text", 
         function() {
-            return `You have gone a total of ${format(player[this.layer].distance)} (+${format(player[this.layer].currentVelocity)} /sec).`
+            return `You have gone a total of ${formatDistance(player[this.layer].distance)} (+${formatDistance(player[this.layer].currentVelocity)}/sec).`
         }],
         ["display-text", 
         function() {
-            return `You current velocity is ${format(player[this.layer].currentVelocity)} /s (+${format(calcAcceleration())} /sec). (Maximum Velocity: ${format(calcMaxVelocity())} /s).`
+            return `You current velocity is ${formatDistance(player[this.layer].currentVelocity)}/s (+${formatDistance(calcAcceleration())}/sec). (Maximum Velocity: ${formatDistance(calcMaxVelocity())}/s).`
         }],
         ["display-text", 
         function() {
-            return `You current acceleration is ${format(calcAcceleration())} /s<sup>2</sup>.`
+            return `You current acceleration is ${formatDistance(calcAcceleration())}/s<sup>2</sup>.`
         }],
         "blank",
         "buyables"
     ],
-    color: "#4BDC13",
+    color: "#1DC42B",
     row: 0, 
     layerShown(){return true}
 })
 
-addLayer("r", {
+addLayer("re", {
     name: "rewards",
-    symbol: "R",
+    symbol: "Re",
     row: "side",
     tooltip: "Rewards",
     tabFormat: {
@@ -122,4 +124,65 @@ addLayer("r", {
             ]
         }
     }
+})
+
+addLayer("r", {
+    name: "rockets",
+    symbol: "R",
+    position: 0,
+    startData() { return {
+        unlocked: false,
+        points: new Decimal(0)
+    }},
+    type: "normal",
+    requires: new Decimal(5e7),
+    resource: "rockets",
+    baseResource: "distance",
+    tooltip() {
+        return `${player[this.layer].points} rockets<br>${player[this.layer].buyables[11]} Rocket Fuel`
+    },
+    baseAmount() {
+        return player.m.distance
+    },
+    exponent() {
+        return 2/5
+    },
+    gainMult() {
+        return getRocketGainMult()
+    },
+    color: "#BFBFBF",
+    row: 1,
+    buyables: {
+        11: {
+            display() {
+                return `Reset your rockets<br>(but nothing else)<br>to get 1 rocket fuel<br>Req: ${formatWhole(this.cost())} rockets.`
+            },
+            cost(x) {
+                return new Decimal(25).times(Decimal.pow(5, x.pow(1.1))).round()
+            },
+            canAfford() {
+                return player[this.layer].points.gte(this.cost())
+            },
+            buy() {
+                player[this.layer].points = decimalZero
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            style: {
+                'height': '100px',
+                'width': '175px'
+            }
+        }
+    },
+    tabFormat: [
+        "prestige-button", "blank",
+        ["display-text",
+        function() {
+            return `You have ${formatWhole(player[this.layer].points)} rockets, which are making your acceleration & maximum velocity boost themselves (log(x+1)<sup>${format(getRocketEffect())}</sup>)`
+        }], "blank",
+        "buyables", "blank",
+        ["display-text",
+        function() {
+            return `You have ${formatWhole(player[this.layer].buyables[11])} Rocket Fuel, which boosts the effect of rockets by ${format(getFuelEff().sub(1).times(100))}%, and adds ${format(getFuelEff2())} additional rockets to their effect.`
+        }]
+    ]
 })

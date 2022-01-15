@@ -7,24 +7,28 @@ let modInfo = {
 
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
+	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "Beginning starts",
+	num: "0.2",
+	name: "Going to space",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.2</h3><br>
+		- Added Rockets layer.<br>
+		- Added Rocket Fuel buyable.<br>
+		- Current endgame until 1 Tm distance.<br>
+		- Added number formating <b>formatDistance</b><br>
 	<h3>v0.1.1</h3><br>
 		- Fixed endgame.<br>
-		- urrent endgame until 5e7 distance.
 	<h3>v0.1</h3><br>
 		- Added 2 buyables.<br>
 		- Added 2 layers.<br>
-		- Current endgame until 5e6 distance.(NOT)`
+		- Current endgame until 5e6 distance.`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -60,7 +64,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.distance.gte(new Decimal(5e7))
+	return player.m.distance.gte(new Decimal(1e12))
 }
 
 
