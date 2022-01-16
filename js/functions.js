@@ -36,6 +36,7 @@ function getRankFP() {
     let tier = player.m.buyables[12]
     if (tier.gt(0)) fp = fp.times(TIERS["tier_1"].effect) //Tier 1
     if (tier.gt(2)) fp = fp.times(TIERS["tier_3"].effect()) //Tier 3
+    if (hasUpgrade("tr", 13)) fp = fp.times(1.1)
     return fp
 }
 function getRankBaseCost() {
@@ -56,6 +57,7 @@ function getTierBaseCost() {
 // Rockets
 function getRocketGainMult() {
     let mult = new Decimal(1)
+    if (hasUpgrade("tr", 25)) tmp.timeSpeed = tmp.timeSpeed.times(upgradeEffect("tr", 25)) //Time Cube Upgrade 10
     return mult
 }
 function getRocketEffect() {
@@ -68,10 +70,10 @@ function getRocketEffect() {
 
 //Rocket Fuel
 function getFuelPow() {
-    return new Decimal(1)
+    return new Decimal(1).times(hasUpgrade("tr", 15) ? 1.1 : 1)
 }
 function getFreeFuel() {
-    return new Decimal(0)
+    return player.tr ? tmp.tr.effect : new Decimal(0)
 }
 function getFuelEff() {
     let rf = player.r.buyables[11]
@@ -82,4 +84,19 @@ function getFuelEff() {
 function getFuelEff2() {
     let eff = player.r.buyables[11].sqrt().div(2)
     return eff
+}
+
+//Time Reversal
+function getTimeCubeGain() {
+    let gain = new Decimal(1)
+    if (hasUpgrade("tr", 11)) gain = gain.times(upgradeEffect("tr", 11)) //Time Cube Upgrade 1
+    if (hasUpgrade("tr", 14)) gain = gain.times(upgradeEffect("tr", 14)) //Time Cube Upgrade 4
+    return gain
+}
+
+function timeSpeed() {
+    tmp.timeSpeed = new Decimal(1)
+    if (hasUpgrade("tr", 12)) tmp.timeSpeed = tmp.timeSpeed.times(upgradeEffect("tr", 12)) //Time Cube Upgrade 2
+    if (hasUpgrade("tr", 22)) tmp.timeSpeed = tmp.timeSpeed.times(upgradeEffect("tr", 22)) //Time Cube Upgrade 7
+    return tmp.timeSpeed
 }

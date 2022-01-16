@@ -13,11 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2",
-	name: "Going to space",
+	num: "0.3",
+	name: "Back in time",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.3</h3><br>
+		- Added Time Reversal layer.<br>
+		- Added 10(4 unuseful) upgrades.<br>
+		- Current endgame 50 Mpc distance.<br>
+		- Replace a code(Reset the game)<br>
 	<h3>v0.2</h3><br>
 		- Added Rockets layer.<br>
 		- Added Rocket Fuel buyable.<br>
@@ -64,7 +69,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.distance.gte(new Decimal(1e12))
+	return player.m.points.gte(new Decimal(3.086e19))
 }
 
 
