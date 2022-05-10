@@ -88,6 +88,26 @@ const RANKS = {
         info() {
             return `Multiply your acceleration & maximum velocity by (n+1)^1.6, where <i>n</i> is your rocket fuel.<br>Currently: ${format(this.effect())}`
         }
+    },
+    rank_16: {
+        title: `Rank 16`,
+        effect: new Decimal(4),
+        display() {
+            return player.m.buyables[11].gte(16)
+        },
+        info() {
+            return `Quadruple your acceleration.`
+        }
+    },
+    rank_21: {
+        title: `Rank 21`,
+        effect: new Decimal(2),
+        display() {
+            return player.m.buyables[11].gte(21)
+        },
+        info() {
+            return `Double intelligence gain.`
+        }
     }
 }
 const TIERS = {
@@ -134,6 +154,16 @@ const TIERS = {
         },
         info() {
             return `Triple your acceleration.`
+        }
+    },
+    tier_5: {
+        title: `Tier 5`,
+        effect: new Decimal(2),
+        display() {
+            return player.m.buyables[12].gte(5)
+        },
+        info() {
+            return `Double intelligence gain.`
         }
     }
 }

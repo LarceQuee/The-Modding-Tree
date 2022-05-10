@@ -11,8 +11,25 @@ addLayer("m", {
         return `Main<br>${formatDistance(player[this.layer].points)}<br>${player[this.layer].buyables[11]} Rank | ${player[this.layer].buyables[12]} Tier`
     },
     update(diff) {
+        let auto = player.auto
         player[this.layer].currentVelocity = player[this.layer].currentVelocity.plus(calcAcceleration().times(timeSpeed()).times(player.tr.timeReverse ? -1 : 1).times(diff)).min(calcMaxVelocity()).max(0)
         player[this.layer].points = player[this.layer].points.plus(player[this.layer].currentVelocity.times(timeSpeed()).times(player.tr.timeReverse ? -1 : 1).times(diff)).max(0)
+        if (auto.activeRankbot && auto.unlockedRankbot) {
+            auto.timeRankbot = auto.timeRankbot.plus(diff).min(60)
+            if (auto.timeRankbot.gte(tmp.auto.buyables[11].effect)) {
+                layers.m.buyables[11].buy()
+                //setBuyableAmount(this.layer, 11, new Decimal(player[this.layer].points.div(getRankBaseCost()).max(1).log(2).sqrt().plus(1).times(getRankFP()).plus(1).round().min(player[this.layer].buyables[11].plus(tmp.auto.buyables[12].effect))))
+                auto.timeRankbot = auto.timeRankbot.min(0)
+            }
+        }
+        if (auto.activeTierbot && auto.unlockedTierbot) {
+            auto.timeTierbot = auto.timeTierbot.plus(diff).min(60)
+            if (auto.timeTierbot.gte(tmp.auto.buyables[21].effect)) {
+                layers.m.buyables[12].buy()
+                //setBuyableAmount(this.layer, 12, new Decimal(player.m.buyables[11].sub(getTierBaseCost()).max(0).sqrt().times(getTierFP()).add(1).round().min(player.m.buyables[12].plus(tmp.auto.buyables[22].effect))))
+                auto.timeTierbot = auto.timeTierbot.min(0)
+            }
+        }
     },
     buyables: {
         11: {
@@ -25,16 +42,23 @@ addLayer("m", {
             cost(x) {
                 return new Decimal(getRankBaseCost()).times(Decimal.pow(2,x.div(getRankFP()).max(1).sub(1).pow(2)))
             },
+            bulk() {
+                return new Decimal(player[this.layer].points.div(getRankBaseCost()).max(1).log(2).sqrt().plus(1).times(getRankFP()).plus(1).round())
+            },
             amount() {
-                player.m.buyables[11] = player.m.buyables[11].max(1)
+                return player.m.buyables[11] = player.m.buyables[11].max(1)
             },
             canAfford() {
                 return player[this.layer].points.gte(this.cost())
             },
             buy() {
-                player[this.layer].points.mag = 0
-                player[this.layer].currentVelocity.mag = 0
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if(this.canAfford()) {
+                    let amount = player[this.layer].buyables[this.id]
+                    let effect = tmp.auto.buyables[12].effect
+                    setBuyableAmount(this.layer, this.id, player.auto.activeRankbot ? this.bulk().min(amount.add(effect).round()) : getBuyableAmount(this.layer, this.id).add(1))
+                    player[this.layer].points.mag = 0
+                    player[this.layer].currentVelocity.mag = 0
+                }
             }
         },
         12: {
@@ -45,19 +69,48 @@ addLayer("m", {
                 return `Reset your ranks,<br>but tier up.<br>Req: Rank ${this.cost()}.`
             },
             cost(x) {
-                return new Decimal(getTierBaseCost()).plus(x.pow(getTierFP()).pow(2))
+                return new Decimal(getTierBaseCost()).plus(x.pow(getTierFP()).pow(2)).round()
+            },
+            bulk() {
+                return new Decimal(player.m.buyables[11].sub(getTierBaseCost()).max(0).sqrt().times(getTierFP()).add(1).round())
             },
             canAfford() {
                 return player[this.layer].buyables[11].gte(this.cost())
             },
             buy() {
-                player[this.layer].points.mag = 0
-                player[this.layer].currentVelocity.mag = 0
-                player[this.layer].buyables[11] = decimalOne
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if (this.canAfford()) {
+                    let amount = player[this.layer].buyables[this.id]
+                    let effect = tmp.auto.buyables[22].effect
+                    setBuyableAmount(this.layer, this.id, player.auto.activeTierbot ? this.bulk().min(amount.add(effect).round()) : getBuyableAmount(this.layer, this.id).add(1))
+                    player[this.layer].points.mag = 0
+                    player[this.layer].currentVelocity.mag = 0
+                    player[this.layer].buyables[11] = decimalOne
+                }
             }
         }
     },
+    hotkeys: [
+        {
+            key: "r",
+            description: `R -> Rank Reset`,
+            onPress() {
+                layers.m.buyables[11].buy()
+            },
+            unlocked() {
+                return true
+            }
+        },
+        {
+            key: "t",
+            description: `T -> Tier Reset`,
+            onPress() {
+                layers.m.buyables[12].buy()
+            },
+            unlocked() {
+                return true
+            }
+        }
+    ],
     tabFormat: [
         () => timeSpeed() != 1 ? ["display-text", `Time Speed: ${format(timeSpeed())}x`] : `blank`,
         ["display-text", 
@@ -75,7 +128,7 @@ addLayer("m", {
         "blank",
         "buyables"
     ],
-    color: "#1DC42B",
+    color: "lime",
     row: 0, 
     layerShown(){return true}
 })
@@ -90,13 +143,13 @@ addLayer("r", {
     }},
     type: "normal",
     layerShown() {
-        return player.m.points.gte(5e7) || player[this.layer].unlocked
+        return player[this.layer].unlocked || player.m.points.gte(5e7)
     },
     requires: new Decimal(5e7),
     resource: "rockets",
     baseResource: "distance",
     tooltip() {
-        return `${player[this.layer].points} rockets<br>${player[this.layer].buyables[11]} Rocket Fuel`
+        return `${formatWhole(player[this.layer].points)} rockets<br>${player[this.layer].buyables[11]} Rocket Fuel`
     },
     baseAmount() {
         return player.m.points
@@ -107,7 +160,29 @@ addLayer("r", {
     gainMult() {
         return getRocketGainMult()
     },
-    color: "#BFBFBF",
+    hotkeys: [
+        {
+            key: "R",
+            description: `Shift+R -> Rocket Reset`,
+            onPress() {
+                if (canReset("r")) doReset("r")
+            },
+            unlocked() {
+                return layerunlocked("r")
+            }
+        },
+        {
+            key: "f",
+            description: `F -> Rocket Fuel Reset`,
+            onPress() {
+                layers.r.buyables[11].buy()
+            },
+            unlocked() {
+                return layerunlocked("r")
+            }
+        }
+    ],
+    color: "lightgray",
     row: 1,
     buyables: {
         11: {
@@ -121,8 +196,10 @@ addLayer("r", {
                 return player[this.layer].points.gte(this.cost())
             },
             buy() {
-                player[this.layer].points = decimalZero
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if (this.canAfford()) {
+                    player[this.layer].points = decimalZero
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
             },
             style: {
                 'height': '100px',
@@ -149,7 +226,7 @@ addLayer("tr", {
     symbol: "TR",
     position: 1,
     startData() { return {
-        unlocked: true,
+        unlocked: false,
         points: new Decimal(0),
         timeReverse: false
     }},
@@ -157,11 +234,23 @@ addLayer("tr", {
         return `Time Reversal<br>${format(player[this.layer].points)} Time Cubes`
     },
     layerShown() {
-        return player.m.points.gte(9.461e15) || player[this.layer].points.gt(0)
+        return player.m.points.gte(9.461e15) || player[this.layer].unlocked
     },
     resource: "Time Cubes",
-    color: "#F037EA",
+    color: "magenta",
     row: 1,
+    hotkeys: [
+        {
+            key: "u",
+            description: `U -> Time Reversal`,
+            onPress() {
+                if (layerunlocked("tr")) layers.tr.clickables[11].onClick()
+            },
+            unlocked() {
+                return layerunlocked("tr")
+            }
+        }
+    ],
     update(diff) {
         if (player[this.layer].timeReverse) player[this.layer].points = player[this.layer].points.plus(getTimeCubeGain().times(timeSpeed()).times(diff))
     },
@@ -242,7 +331,7 @@ addLayer("tr", {
             description: `Time goes by 5% faster for every achievement gotten.`,
             cost: new Decimal(4e4),
             effect() {
-                return Decimal.pow(1.05, 0)
+                return Decimal.pow(1.05, player.a.achievements.length)
             },
             tooltip() {
                 return `Currently: ${format(this.effect())}x`
@@ -251,15 +340,21 @@ addLayer("tr", {
         23: {
             description: `Rankbot's interval boosts its magnitude.`,
             cost: new Decimal(7.5e4),
+            effect() {
+                return Decimal.div(4, tmp.auto.buyables[11].effect.max(1e-10)).pow(1/3).max(1)
+            },
             tooltip() {
-                return `Not realisated`
+                return `Currently: ${format(this.effect())}x`
             }
         },
         24: {
             description: `Tierbot's interval boosts its magnitude, but not as strongly as the previous upgrade.`,
             cost: new Decimal(1.2e5),
+            effect() {
+                return Decimal.div(5, tmp.auto.buyables[21].effect.max(1e-10)).pow(1/5).max(1)
+            },
             tooltip() {
-                return `Not realisated`
+                return `Currently: ${format(this.effect())}x`
             }
         },
         25: {
@@ -294,33 +389,35 @@ addLayer("re", {
         "Rank": {
             content: [
                 "blank",
-                ["raw-html", function() {
-                    let html = ""
-                    for (let id in RANKS) {
-                        let data = RANKS[id];
-                        if (data.display) if (data.display()) {
-                            html += "<div><h3>"+data.title+"</h3><br>"+data.info();
-                            html += "</div><br><br>"
+                ["raw-html", () => {
+                        let html = ""
+                        for (let id in RANKS) {
+                            let data = RANKS[id]
+                            if (data.display)
+                                if (data.display()) {
+                                    html += "<div><h3>" + data.title + "</h3><br>" + data.info()
+                                    html += "</div><br><br>"
+                                }
                         }
-                    }
-                    return html
-                }]
+                        return html
+                    }]
             ]
         },
         "Tier": {
             content: [
                 "blank",
-                ["raw-html", function() {
-                    let html = ""
-                    for (let id in TIERS) {
-                        let data = TIERS[id];
-                        if (data.display) if (data.display()) {
-                            html += "<div><h3>"+data.title+"</h3><br>"+data.info();
-                            html += "</div><br><br>"
+                ["raw-html", () => {
+                        let html = ""
+                        for (let id in TIERS) {
+                            let data = TIERS[id]
+                            if (data.display)
+                                if (data.display()) {
+                                    html += "<div><h3>" + data.title + "</h3><br>" + data.info()
+                                    html += "</div><br><br>"
+                                }
                         }
-                    }
-                    return html
-                }]
+                        return html
+                    }]
             ]
         }
     }

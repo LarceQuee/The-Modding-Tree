@@ -112,16 +112,32 @@ function invertOOM(x){
 
 function formatDistance(m) {
     m = new Decimal(m)
-    if (m < 1000) return format(m) + ' m'
-    else if (m < 1000000) return format(m.div(1000)) + ' km'
-    else if (m < 1e9) return format(m.div(1e6)) + ' Mm'
-    else if (m < 1e12) return format(m.div(1e9)) + ' Gm'
-    else if (m < 1e15) return format(m.div(1e12)) + ' Tm'
-    else if (m < 9.461e15) return format(m.div(1e15)) + ' Pm'
-    else if (m < 3.086e16) return format(m.div(9.461e15)) + ' ly'
-    else if (m < 3.086e19) return format(m.div(3.086e16)) + ' pc'
-    else if (m < 3.086e22) return format(m.div(3.086e19)) + ' kpc'
-    else if (m < 3.086e25) return format(m.div(3.086e22)) + ' Mpc'
-    else if (m < 4.4e26) return format(m.div(3.086e25)) + ' Gpc'
-    return format(m.div(4.4e26)) + ' uni'
+    if (m < 1000) return format(m) + ' m' // 1 m
+    else if (m < 1000000) return format(m.div(1000)) + ' km' // 1000 | 1e3 m
+    else if (m < 1e9) return format(m.div(1e6)) + ' Mm' // 1000000 | 1e6 m
+    else if (m < 1e12) return format(m.div(1e9)) + ' Gm' // 1000000000 | 1e9 m
+    else if (m < 1e15) return format(m.div(1e12)) + ' Tm' // 1000000000000 | 1e12 m
+    else if (m < 9.461e15) return format(m.div(1e15)) + ' Pm' // 1000000000000000 | 1e15m
+    else if (m < 3.086e16) return format(m.div(9.461e15)) + ' ly' // 9461000000000000 | 9.461e15 m
+    else if (m < 3.086e19) return format(m.div(3.086e16)) + ' pc' // 30860000000000000 | 3.086e16 m
+    else if (m < 3.086e22) return format(m.div(3.086e19)) + ' kpc' // 30860000000000000000 | 3.086e19 m
+    else if (m < 3.086e25) return format(m.div(3.086e22)) + ' Mpc' // 30860000000000000000000 | 3.086e22 m
+    else if (m < 4.4e26) return format(m.div(3.086e25)) + ' Gpc' // 30860000000000000000000 | 3.086e25 m
+    return format(m.div(4.4e26)) + ' uni' // 440000000000000000000000000 | 4.4e26 m
+}
+
+const DISTANCE = {
+    m: 1,
+    km: 1e3,
+    Mm: 1e6,
+    Gm: 1e9,
+    Tm: 1e12,
+    Pm: 1e15,
+    ly: 9.461e15,
+    pc: 3.086e16,
+    kpc: 3.086e19,
+    Mpc: 3.086e22,
+    Gpc: 3.086e25,
+    uni: 4.4e26,
+    mlt: "4.4e1000000026"
 }

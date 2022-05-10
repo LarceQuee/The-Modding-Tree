@@ -110,6 +110,17 @@ function updateTemp() {
 
 	}
 
+	let r = player.r.points
+	tmp.r.accPow = new Decimal(tmp.acc).plus(1).log10().pow(getRocketEffect()).plus(r).max(1)
+	tmp.r.mvPow = new Decimal(tmp.maxVel).plus(1).log10().pow(getRocketEffect()).plus(r).max(1)
+
+	bestEverMath()
+
+	if (true) {
+		player.tr.unlocked = tmp.tr.layerShown
+		player.auto.unlocked = tmp.auto.layerShown
+	}
+
 	tmp.pointGen = getPointGen()
 	tmp.backgroundStyle = readData(backgroundStyle)
 

@@ -3,7 +3,7 @@ let modInfo = {
 	id: "mymod",
 	author: "LarceQuee",
 	pointsName: "nothing",
-	modFiles: ["layers.js", "tree.js", "reward.js", "functions.js"],
+	modFiles: ["layers.js", "tree.js", "reward.js", "functions.js", "achievements.js","automation.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,24 +13,28 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3",
-	name: "Back in time",
+	num: "0.4",
+	name: "Automation age",
 }
 
-let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.3</h3><br>
+let changelog = `<h1>Changelog:</h1><br><br>
+	<font size=5 color="orange">v0.4</font><br>
+		- Added 32(29 can possible) Achievements.<br>
+		- Added Automation layer.<br>
+		- Various code changed.<br><br>
+	<font size=5 color="orange">v0.3</font><br>
 		- Added Time Reversal layer.<br>
 		- Added 10(4 unuseful) upgrades.<br>
 		- Current endgame 50 Mpc distance.<br>
-		- Replace a code(Reset the game)<br>
-	<h3>v0.2</h3><br>
+		- Various code changed.(Maybe reset the game)<br><br>
+	<font size=5 color="orange">v0.2</font><br>
 		- Added Rockets layer.<br>
 		- Added Rocket Fuel buyable.<br>
 		- Current endgame until 1 Tm distance.<br>
-		- Added number formating <b>formatDistance</b><br>
-	<h3>v0.1.1</h3><br>
-		- Fixed endgame.<br>
-	<h3>v0.1</h3><br>
+		- Added number formating <b>formatDistance</b><br><br>
+	<font size=4 color="red">v0.1.1</font><br>
+		- Fixed endgame.<br><br>
+	<font size=5 color="orange">v0.1</font><br>
 		- Added 2 buyables.<br>
 		- Added 2 layers.<br>
 		- Current endgame until 5e6 distance.`
@@ -69,7 +73,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.points.gte(new Decimal(3.086e19))
+	return player.m.points.gte(new Decimal(DISTANCE['Mpc']).times(50))
 }
 
 
