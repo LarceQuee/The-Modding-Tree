@@ -1,3 +1,28 @@
+const ROBOT_COST_INC = {
+    interval: {
+        11: new Decimal(7),
+        21: new Decimal(8),
+        31: new Decimal(15)
+    },
+    magnitude: {
+        12: new Decimal(3),
+        22: new Decimal(4),
+        32: new Decimal(12)
+    }
+}
+const ROBOT_COST_START = {
+    interval: {
+        11: new Decimal(2),
+        21: new Decimal(2),
+        31: new Decimal(1e5)
+    },
+    magnitude: {
+        12: new Decimal(1),
+        22: new Decimal(1),
+        32: new Decimal(4e5)
+    }
+}
+
 // Distance
 function calcAcceleration() {
     tmp.acc = new Decimal(0.1)
@@ -12,6 +37,8 @@ function calcAcceleration() {
     if (tier.gt(3)) tmp.acc = tmp.acc.times(TIERS["tier_4"].effect) //Tier 4
     if (rank.gt(14)) tmp.acc = tmp.acc.times(RANKS["rank_15"].effect()) //Rank 15
     if (rank.gt(15)) tmp.acc = tmp.acc.times(RANKS["rank_16"].effect) //Rank 16
+    if (rank.gt(25)) tmp.acc = tmp.acc.times(RANKS["rank_26"].effect) //Rank 26
+    if (tier.gt(5)) tmp.acc = tmp.acc.times(TIERS["tier_6"].effect) //Tier 6
     if (hasAchievement("a", 12)) tmp.acc = tmp.acc.times(achievementEffect("a", 12)) //Ach 12
     if (hasAchievement("a", 14)) tmp.acc = tmp.acc.times(achievementEffect("a", 14)) //Ach 14
     if (hasAchievement("a", 22)) tmp.acc = tmp.acc.times(achievementEffect("a", 22)) //Ach 22
@@ -36,6 +63,7 @@ function calcMaxVelocity() {
     if (hasAchievement("a", 21)) tmp.maxVel = tmp.maxVel.times(achievementEffect("a", 21)) //Ach 21
     if (hasAchievement("a", 24)) tmp.maxVel = tmp.maxVel.times(achievementEffect("a", 24)) //Ach 24
     if (hasAchievement("a", 41)) tmp.maxVel = tmp.maxVel.times(achievementEffect("a", 41)) //Ach 41
+    if (hasAchievement("a", 51)) tmp.maxVel = tmp.maxVel.times(achievementEffect("a", 51)) //Ach 51
     tmp.maxVel = tmp.maxVel.times(tmp.r.mvPow)
     return tmp.maxVel
 }
@@ -72,14 +100,23 @@ function getTierBaseCost() {
 }
 
 // Rockets
+function getRocketSoftcapStart() {
+    let sc = new Decimal(100000)
+    return sc
+}
+function getRocketEffectSoftcapStars() {
+    return new Decimal(5)
+}
 function getRocketGainMult() {
     let mult = new Decimal(1)
+    let ucMil = tmp.uc.milestones
     if (hasUpgrade("tr", 25)) mult = mult.times(upgradeEffect("tr", 25)) //Time Cube Upgrade 10
     if (hasAchievement("a", 15)) mult = mult.times(achievementEffect("a", 15)) //Ach 15
     if (hasAchievement("a", 26)) mult = mult.times(achievementEffect("a", 26)) //Ach 26
     if (hasAchievement("a", 34)) mult = mult.times(achievementEffect("a", 34)) //Ach 34
     if (hasAchievement("a", 44)) mult = mult.times(achievementEffect("a", 44)) //Ach 44
-    if (hasUpgrade("tr", 25)) mult = mult.times(upgradeEffect("tr", 25)) //
+    if (hasMilestone('uc', 6)) mult = mult.times(ucMil[6].effect) //Collapse Milestone 6
+    if (hasMilestone('uc', 8)) mult = mult.times(ucMil[8].effect) //Collapse Milestone 8
     return mult
 }
 function getRocketEffect() {
@@ -90,8 +127,11 @@ function getRocketEffect() {
     if (eff.gte(getRocketEffectSoftcapStars())) eff = eff.sqrt().times(Decimal.sqrt(getRocketEffectSoftcapStars()))
     return eff
 }
-function getRocketEffectSoftcapStars() {
-    return new Decimal(5)
+function getRocketGain() {
+    let gain = tmp.r.resetGain
+    if (hasMilestone('uc', 9)) gain = gain.div(100)
+    else gain = decimalZero
+    return gain
 }
 
 //Rocket Fuel
@@ -117,18 +157,29 @@ function getFuelEff2() {
 function getScrapGain() {
     let gain = player.m.points.plus(1).pow(2).times(player.m.currentVelocity.plus(1)).log10().div(100)
     if (hasAchievement("a", 36)) gain = gain.times(achievementEffect("a", 36)) //Ach 36
+    if (hasUpgrade("tr", 21)) gain = gain.times(upgradeEffect("tr", 21)) //TR Upgrade 21
     return gain
 }
 function getIntelligenceGain() {
-    let gain = player.m.buyables[11].plus(1).pow(2).times(player.m.buyables[12].plus(1)).cbrt().div(1000)
     let rank = player.m.buyables[11]
     let tier = player.m.buyables[12]
-    if (rank.gt(20)) gain = gain.times(RANKS["rank_21"].effect) //Rank 20
+    let gain = rank.plus(1).pow(2).times(tier.plus(1)).cbrt().div(1000)
+    if (rank.gt(20)) gain = gain.times(RANKS["rank_21"].effect) //Rank 21
+    if (rank.gt(30)) gain = gain.times(RANKS["rank_31"].effect) //Rank 31
     if (tier.gt(4)) gain = gain.times(TIERS["tier_5"].effect) //Tier 5
     if (hasAchievement("a", 36)) gain = gain.times(achievementEffect("a", 36)) //Ach 36
     if (hasAchievement("a", 46)) gain = gain.times(achievementEffect("a", 46)) //Ach 46
-    if (hasUpgrade("tr", 21)) gain = gain.times(upgradeEffect("tr", 21))
+    if (hasUpgrade("tr", 21)) gain = gain.times(upgradeEffect("tr", 21)) //TR Upgrade 21
     return gain
+}
+function getIntCost(x) {
+    return Decimal.pow(ROBOT_COST_INC.interval[x], player.auto.buyables[x]).times(ROBOT_COST_START.interval[x])
+}
+function getMagCost(x) {
+    return Decimal.pow(ROBOT_COST_INC.magnitude[x], player.auto.buyables[x].plus(1).pow(2)).times(ROBOT_COST_START.magnitude[x])
+}
+function getBuyAutomation(v) {
+    return false
 }
 
 //Time Reversal
@@ -136,16 +187,50 @@ function getTimeCubeGain() {
     let gain = new Decimal(1)
     if (hasUpgrade("tr", 11)) gain = gain.times(upgradeEffect("tr", 11)) //Time Cube Upgrade 1
     if (hasUpgrade("tr", 14)) gain = gain.times(upgradeEffect("tr", 14)) //Time Cube Upgrade 4
+    if (hasAchievement("a", 55)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 55)) //Ach 55
     return gain
 }
 
 function timeSpeed() {
     tmp.timeSpeed = new Decimal(1)
+    let rank = player.m.buyables[11]
     if (hasUpgrade("tr", 12)) tmp.timeSpeed = tmp.timeSpeed.times(upgradeEffect("tr", 12)) //Time Cube Upgrade 2
     if (hasUpgrade("tr", 22)) tmp.timeSpeed = tmp.timeSpeed.times(upgradeEffect("tr", 22)) //Time Cube Upgrade 7
+    if (rank.gt(35)) tmp.timeSpeed = tmp.timeSpeed.times(RANKS["rank_36"].effect) //Rank 36
     if (hasAchievement("a", 17)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 17)) //Ach 17
     if (hasAchievement("a", 18)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 18)) //Ach 18
     if (hasAchievement("a", 27)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 27)) //Ach 27
     if (hasAchievement("a", 47)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 47)) //Ach 47
+    if (hasAchievement("a", 52)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 52)) //Ach 52
+    if (hasAchievement("a", 57)) tmp.timeSpeed = tmp.timeSpeed.times(achievementEffect("a", 57)) //Ach 57
+    tmp.timeSpeed = tmp.timeSpeed.times(getCadaverEff().max(1))
+    if (hasMilestone("uc", 1)) tmp.timeSpeed = tmp.timeSpeed.times(tmp.uc.milestones[1].effect) ///Collapse Milestone 1
+    if (hasMilestone("uc", 2)) tmp.timeSpeed = tmp.timeSpeed.times(tmp.uc.milestones[2].effect) //Collapse Milestone 2
     return tmp.timeSpeed
+}
+
+//Collapse
+function getCadaverGainMult() {
+    let mult = new Decimal(1)
+    let ucMil = tmp.uc.milestones
+    if (hasMilestone('uc', 5)) mult = mult.times(ucMil[5].effect) //Collapse Milestone 5
+    if (hasMilestone('uc', 10)) mult = mult.times(ucMil[10].effect) //Collapse Milestone 10
+    if (hasAchievement('a', 38)) mult = mult.times(achievementEffect('a', 38))
+    return mult
+}
+function getCadaverEffSoftcapStart() {
+    return new Decimal(1e12)
+}
+function getCadaverEffSoftcapPower() {
+    return new Decimal(1)
+}
+function getCadaverEff() {
+    let rank = player.m.buyables[11]
+    let tier = player.m.buyables[12]
+    let cadavers = player.uc.points
+    let scs = getCadaverEffSoftcapStart()
+    let scp = getCadaverEffSoftcapPower()
+    let eff = Decimal.log10(rank.plus(tier.times(5)).plus(cadavers).plus(1)).pow(cadavers.plus(1).log(2)).plus(cadavers.sqrt())
+    if (eff.gte(scs)) eff = eff.log10().pow(scp.pow(-1)).times(scs.div(scs.log10().pow(scp.pow(-1))))
+    return eff
 }

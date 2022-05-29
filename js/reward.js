@@ -108,6 +108,36 @@ const RANKS = {
         info() {
             return `Double intelligence gain.`
         }
+    },
+    rank_26: {
+        title: `Rank 26`,
+        effect: new Decimal(10),
+        display() {
+            return player.m.buyables[11].gte(26)
+        },
+        info() {
+            return `Multiply your acceleration by 10.`
+        }
+    },
+    rank_31: {
+        title: `Rank 31`,
+        effect: new Decimal(3),
+        display() {
+            return player.m.buyables[11].gte(31)
+        },
+        info() {
+            return `Triple intelligence gain.`
+        }
+    },
+    rank_36: {
+        title: `Rank 36`,
+        effect: new Decimal(1.5),
+        display() {
+            return player.m.buyables[11].gte(36)
+        },
+        info() {
+            return `Time goes by 50% faster.`
+        }
     }
 }
 const TIERS = {
@@ -164,6 +194,16 @@ const TIERS = {
         },
         info() {
             return `Double intelligence gain.`
+        }
+    },
+    tier_6: {
+        title: `Tier 6`,
+        effect: new Decimal(5),
+        display() {
+            return player.m.buyables[12].gte(6)
+        },
+        info() {
+            return `Quintyple your acceleration.`
         }
     }
 }

@@ -13,11 +13,19 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.4",
-	name: "Automation age",
+	num: "0.5",
+	name: "Dimension of Collapse",
 }
 
 let changelog = `<h1>Changelog:</h1><br><br>
+	<font size=5 color="orange">v0.5</font><br>
+		- Added new Row Achievements.<br>
+		- Added Universal Collapse layer.
+		- Added 12 Milestones.<br>
+		- Added a new Fuelbot in Automation layer.<br>
+		- Current endgame 250000 Cavaders.<br>
+		- 18, 28, 38 Achievements can be earned.<br>
+		- Remake Rocket gain formula.<br><br>
 	<font size=5 color="orange">v0.4</font><br>
 		- Added 32(29 can possible) Achievements.<br>
 		- Added Automation layer.<br>
@@ -73,7 +81,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.points.gte(new Decimal(DISTANCE['Mpc']).times(50))
+	return player.uc.points.gte(250000)
 }
 
 

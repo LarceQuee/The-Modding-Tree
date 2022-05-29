@@ -11,7 +11,10 @@ addLayer("auto", {
         timeRankbot: new Decimal(0),
         unlockedTierbot: false,
         activeTierbot: true,
-        timeTierbot: new Decimal(0)
+        timeTierbot: new Decimal(0),
+        unlockedFuelbot: false,
+        activeFuelbot: true,
+        timeFuelbot: new Decimal(0)
     }},
     layerShown() {
         return player.m.points.gte(1e12) || player[this.layer].unlocked
@@ -61,6 +64,39 @@ addLayer("auto", {
                 'min-width': '100px'
             }
         },
+        13: {
+            display() {
+                return `Purchase the Fuelbot for 1e6 scraps.`
+            },
+            canClick() {
+                return player[this.layer].scraps.gte(1e6)
+            },
+            onClick() {
+                player[this.layer].unlockedFuelbot = !player[this.layer].unlockedFuelbot
+                player[this.layer].scraps = player[this.layer].scraps.minus(1e6)
+            },
+            unlocked() {
+                return !player[this.layer].unlockedFuelbot
+            },
+            style: {
+                'min-height': '33px',
+                'min-width': '100px'
+            }
+        },
+        21: {
+            display: `<h3>Max All</h3>`,
+            canClick: false,
+            tooltip() {
+                return `Not yet.`
+            },
+            onClick() {
+                false //player.subtabs.auto.robot_content
+            },
+            style: {
+                'min-height' : '33px',
+                'min-width' : '50px'
+            }
+        }
     },
     buyables: {
         11: {
@@ -73,9 +109,8 @@ addLayer("auto", {
             tooltip() {
                 return `The interval is how quickly the robot can purnase their designated upgrade.`
             },
-            cost(x) {
-                let pow = new Decimal(7).pow(x)
-                return new Decimal(2).times(pow)
+            cost() {
+                return getIntCost(this.id)
             },
             effect(x) {
                 return new Decimal(4).div(x.plus(1))
@@ -84,8 +119,10 @@ addLayer("auto", {
                 return player[this.layer].intelligence.gte(this.cost())
             },
             buy() {
-                player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if(this.canAfford()) {
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                    player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
+                }
             }
         },
         12: {
@@ -98,8 +135,8 @@ addLayer("auto", {
             tooltip() {
                 return `The magnitude is how many the robot can purnase at once.`
             },
-            cost(x) {
-                return new Decimal(3).pow(x.plus(1).pow(2))
+            cost() {
+                return getMagCost(this.id)
             },
             effect(x) {
                 return player[this.layer].activeRankbot ? new Decimal(x).pow(2).plus(1).pow(upgradeEffect("tr", 23)) : new Decimal(0)
@@ -108,8 +145,10 @@ addLayer("auto", {
                 return player[this.layer].intelligence.gte(this.cost())
             },
             buy() {
-                player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if(this.canAfford()) {
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                    player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
+                }
             }
         },
         21: {
@@ -122,9 +161,8 @@ addLayer("auto", {
             tooltip() {
                 return `The interval is how quickly the robot can purnase their designated upgrade.`
             },
-            cost(x) {
-                let pow = new Decimal(8).pow(x)
-                return new Decimal(2).times(pow)
+            cost() {
+                return getIntCost(this.id)
             },
             effect(x) {
                 return new Decimal(5).div(x.plus(1))
@@ -133,8 +171,10 @@ addLayer("auto", {
                 return player[this.layer].intelligence.gte(this.cost())
             },
             buy() {
-                player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if(this.canAfford()) {
+                    player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
             }
         },
         22: {
@@ -147,8 +187,8 @@ addLayer("auto", {
             tooltip() {
                 return `The magnitude is how many the robot can purnase at once.`
             },
-            cost(x) {
-                return new Decimal(4).pow(x.plus(1).pow(2))
+            cost() {
+                return getMagCost(this.id)
             },
             effect(x) {
                 return player[this.layer].activeTierbot ? new Decimal(x).pow(2).plus(1).pow(upgradeEffect("tr", 24)) : new Decimal(0)
@@ -157,8 +197,62 @@ addLayer("auto", {
                 return player[this.layer].intelligence.gte(this.cost())
             },
             buy() {
-                player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                if(this.canAfford()) {
+                    player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
+            }
+        },
+        31: {
+            title() {
+                return `Upgrade Interval`
+            },
+            display() {
+                return `<b>Interval</b>: ${formatTime(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
+            },
+            tooltip() {
+                return `The interval is how quickly the robot can purnase their designated upgrade.`
+            },
+            cost() {
+                return getIntCost(this.id)
+            },
+            effect(x) {
+                return new Decimal(3600).div(x.plus(1))
+            },
+            canAfford() {
+                return player[this.layer].intelligence.gte(this.cost())
+            },
+            buy() {
+                if(this.canAfford()) {
+                    player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
+            }
+        },
+        32: {
+            title() {
+                return `Upgrade Magnitude`
+            },
+            display() {
+                return `<b>Magnitude</b>: ${formatWhole(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
+            },
+            tooltip() {
+                return `The magnitude is how many the robot can purnase at once.`
+            },
+            cost() {
+                return getMagCost(this.id)
+            },
+            effect(x) {
+                return player[this.layer].activeFuelbot ? new Decimal(x).pow(2).plus(1) : new Decimal(0)
+            },
+            canAfford() {
+                return player[this.layer].intelligence.gte(this.cost())
+            },
+            buy() {
+                if(this.canAfford()) {
+                    player[this.layer].intelligence = player[this.layer].intelligence.minus(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                }
             }
         }
     },
@@ -168,6 +262,7 @@ addLayer("auto", {
         robot_content: {
             "Rankbot": {
                 content: [
+                    ["clickable", [21]],
                     ["buyables", [1]],
                     ["row", [["display-text", function() {
                         return `Activate: `
@@ -179,6 +274,7 @@ addLayer("auto", {
             },
             "Tierbot": {
                 content: [
+                    ["clickable", [21]],
                     ["buyables", [2]],
                     ["row", [["display-text", function() {
                         return `Activate: `
@@ -186,6 +282,18 @@ addLayer("auto", {
                 ],
                 unlocked() {
                     return player.auto.unlockedTierbot
+                }
+            },
+            "Fuelbot": {
+                content: [
+                    ["clickable", [21]],
+                    ["buyables", [3]],
+                    ["row", [["display-text", function() {
+                        return `Activate: `
+                    }], ["toggle", ["auto", "activeFuelbot"]]]]
+                ],
+                unlocked() {
+                    return player.auto.unlockedFuelbot
                 }
             }
         }
@@ -196,6 +304,6 @@ addLayer("auto", {
             return `You have ${format(player[this.layer].scraps)} scraps (+${format(getScrapGain().times(timeSpeed()))}/sec). You have ${format(player[this.layer].intelligence)} intelligence (+${format(getIntelligenceGain().times(timeSpeed()))}/sec).`
         }], "blank",
         ["clickables", [1]],
-        ()=> (player.auto.unlockedRankbot + player.auto.unlockedTierbot > 0) ? ["microtabs","robot_content"] : "blank"
+        ()=> (player.auto.unlockedRankbot + player.auto.unlockedTierbot + player.auto.unlockedFuelbot > 0) ? ["microtabs","robot_content"] : "blank"
     ]
 })
