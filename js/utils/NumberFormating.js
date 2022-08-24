@@ -141,3 +141,9 @@ const DISTANCE = {
     uni: 4.4e26,
     mlt: "4.4e1000000026"
 }
+
+function formatPrecents(m) {
+    m = new Decimal(m)
+    if (m.eq(0)) return decimalZero
+    return format(m.minus(1).times(100))
+}

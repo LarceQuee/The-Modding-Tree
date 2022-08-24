@@ -410,3 +410,11 @@ function gridRun(layer, func, data, id) {
 	else
 		return layers[layer].grid[func];
 }
+
+function primesLTE(x) {
+	x = new Decimal(x).round()
+	if (x.lte(1)) return new Decimal(0)
+	if (x.lte(11)) return Decimal.mul(2.7135e-158, Decimal.pow(2.116e14, x)).sub(x.pow(2).times(0.053030303)).plus(x.times(1.02576)).sub(0.9).round()
+	let ret = x.div(x.ln())
+	return ret.round()
+}

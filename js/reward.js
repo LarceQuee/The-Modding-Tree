@@ -86,7 +86,7 @@ const RANKS = {
             return player.m.buyables[11].gte(15)
         },
         info() {
-            return `Multiply your acceleration & maximum velocity by (n+1)^1.6, where <i>n</i> is your rocket fuel.<br>Currently: ${format(this.effect())}`
+            return `Multiply your acceleration & maximum velocity by (n+1)^1.6, where <i>n</i> is your rocket fuel.<br>Currently: ${format(this.effect())}x`
         }
     },
     rank_16: {
@@ -137,6 +137,52 @@ const RANKS = {
         },
         info() {
             return `Time goes by 50% faster.`
+        }
+    },
+    rank_41: {
+        title: `Rank 41`,
+        effect() {
+            let eff = primesLTE(player.auto.scraps).max(1)
+            if (eff.gte(1e9)) eff = eff.log10().times(1e9 / 9)
+            return eff
+        },
+        display() {
+            return player.m.buyables[11].gte(41)
+        },
+        info() {
+            return `Multiply intelligence gain by the number of primes less than or equal to your scrap amount (minimum 1, softcaps after 1e9 primes).<br>Currently: ${format(this.effect())}x`
+        }
+    },
+    rank_46: {
+        title: `Rank 46`,
+        effect: new Decimal(1.8),
+        display() {
+            return player.m.buyables[11].gte(46)
+        },
+        info() {
+            return `Time goes by 80% faster.`
+        }
+    },
+    rank_51: {
+        title: `Rank 51`,
+        effect: new Decimal(15),
+        display() {
+            return player.m.buyables[11].gte(51)
+        },
+        info() {
+            return `Multiply your acceleration by 15.`
+        }
+    },
+    rank_56: {
+        title: `Rank 56`,
+        effect() {
+            return Decimal.pow(2, player.m.buyables[11])
+        },
+        display() {
+            return player.m.buyables[11].gte(56)
+        },
+        info() {
+            return `Double your maximum velocity for each rank up.<br>Currently: ${format(this.effect())}x`
         }
     }
 }
@@ -204,6 +250,28 @@ const TIERS = {
         },
         info() {
             return `Quintyple your acceleration.`
+        }
+    },
+    tier_7: {
+        title: `Tier 7`,
+        effect: new Decimal(1.5),
+        display() {
+            return player.m.buyables[12].gte(7)
+        },
+        info() {
+            return `Time goes by 50% faster.`
+        }
+    },
+    tier_8: {
+        title: `Tier 8`,
+        effect() {
+            return Decimal.pow(1.1, player.r.buyables[11])
+        },
+        display() {
+            return player.m.buyables[12].gte(8)
+        },
+        info() {
+            return `Time goes by 10% faster for each rocket fuel.<br>Currently: ${format(this.effect())}x`
         }
     }
 }

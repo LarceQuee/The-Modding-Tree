@@ -22,6 +22,27 @@ function getAchData(n) {
     return obj
 }
 
+function get68Ach() {
+    if (player.p.buyables[11].eq(0)) return false
+    else if (player.p.buyables[21].eq(0)) return false
+    else if (player.p.buyables[22].eq(0)) return false
+    else if (player.p.buyables[31].eq(0)) return false
+    else if (player.p.buyables[32].eq(0)) return false
+    else if (player.p.buyables[33].eq(0)) return false
+    else if (player.p.buyables[41].eq(0)) return false
+    else if (player.p.buyables[42].eq(0)) return false
+    else if (player.p.buyables[43].eq(0)) return false
+    else if (player.p.buyables[44].eq(0)) return false
+    else return true
+}
+
+function get63AchEff() {
+    let eff = timeSpeed().pow(0.025)
+    if (!hasAchievement('a', 63))
+        return new Decimal(1)
+    return eff
+}
+
 const PROGRESSION_MILESTONES = {
     11: () => player.m.points.gte(100),
     12: () => player.m.buyables[11].gt(1),
@@ -63,6 +84,14 @@ const PROGRESSION_MILESTONES = {
     56: () => player.auto.unlockedFuelbot == true,
     57: () => player.tr.points.gte(9e15),
     58: () => player.m.points.gte(DISTANCE['uni']*2.22e22),
+    61: () => player.p.unlocked,
+    62: () => player.uc.lifeEssence.gte(1e6),
+    63: () => player.tr.points.gte(1e28),
+    64: () => player.m.buyables[11].gte(50),
+    65: () => player.uc.points.gte(5e7),
+    66: () => tmp.auto.buyables[31].effect.lte(120),
+    67: () => player.m.points.gte(1e80 *DISTANCE.uni),
+    68: () => get68Ach()
 }
 
 const PROGRESSION_MILESTONES_TEXT = {
@@ -106,6 +135,14 @@ const PROGRESSION_MILESTONES_TEXT = {
     56: `<b>Auto-Gas</b><br>Unlock Fuelbot.`,
     57: `<b>No More Thinking</b><br>Reach 9e15 Time Cubes.<br>Reward: Time goes by 10% faster.`,
     58: `<b>The Multiverse is Ever-Expanding</b><br>Go at least 2.22e22 uni.<br>Reward: The Rocket Fuel reset only Rockets to 50% of their current amount.`,
+    61: `<b>Jimmy the Crow's Debut</b><br>Unlock Pathogens.<br>Reward: Maximum Velocity is 60% higher`,
+    62: `<b>Alive Plus</b><br>Reach 1e6 Life Essence.`,
+    63: `<b>Time Doesn't Exist</b><br>Reach 1e28 Time Cubes.<br>Reward: Time Speed boosts Pathogen gain at a reduced rate.`,
+    64: `<b>Acceleration does nothing.</b><br>Reach Rank 50.`,
+    65: `<b>One Death</b><br>Reach 5e7 Cadavers.<br>Reward: Cadaver gain is increased by 40%`,
+    66: `<b>I thought that was a lot?</b><br>Get Fuelbot's interval less that or equal to 2m.`,
+    67: `<b>Atoms in the universe, of universes.</b><br>Reach 1e80 uni.<br>Reward: Time goes by 11.11% faster.`,
+    68: `<b>Corvid Twenty</b><br>Get one of each pf the 10 Pathogens upgrades.<br>Reward: Pathogen gain is 2.5x faster.`
 }
 
 const PROGRESSION_MILESTONES_EFFECT = {
@@ -135,7 +172,12 @@ const PROGRESSION_MILESTONES_EFFECT = {
     52: new Decimal(1.2),
     55: new Decimal(1.1),
     57: new Decimal(1.1),
-    58: true
+    58: true,
+    61: new Decimal(1.6),
+    63: true,
+    65: new Decimal(1.4),
+    67: new Decimal(1.1111),
+    68: new Decimal(2.5)
 }
 
 addLayer("a", {
@@ -144,7 +186,7 @@ addLayer("a", {
     color: "yellow",
     row: "side",
     tooltip: "Achievements",
-    achievements: getAchData(58),
+    achievements: getAchData(68),
     tabFormat: [
         "blank","blank",
         ["display-text",

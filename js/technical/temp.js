@@ -115,10 +115,13 @@ function updateTemp() {
 	tmp.r.mvPow = new Decimal(tmp.maxVel).plus(1).log10().pow(getRocketEffect()).plus(r).max(1)
 
 	bestEverMath()
+	calcCollapseSCS()
+	calcCollapseSacEff()
 
 	if (true) {
 		player.tr.unlocked = tmp.tr.layerShown
 		player.auto.unlocked = tmp.auto.layerShown
+		player.p.unlocked = tmp.p.layerShown
 	}
 
 	tmp.pointGen = getPointGen()

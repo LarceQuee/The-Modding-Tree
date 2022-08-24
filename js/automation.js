@@ -19,6 +19,7 @@ addLayer("auto", {
     layerShown() {
         return player.m.points.gte(1e12) || player[this.layer].unlocked
     },
+    requires: new Decimal(1e12),
     update(diff) {
         if (layerunlocked("auto")) {
             player[this.layer].scraps = player[this.layer].scraps.plus(getScrapGain().times(timeSpeed()).times(player.tr.timeReverse ? -1 : 1).times(diff)).max(0)
@@ -100,24 +101,12 @@ addLayer("auto", {
     },
     buyables: {
         11: {
-            title() {
-                return `Upgrade Interval`
-            },
-            display() {
-                return `<b>Interval</b>: ${formatTime(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
-            },
-            tooltip() {
-                return `The interval is how quickly the robot can purnase their designated upgrade.`
-            },
-            cost() {
-                return getIntCost(this.id)
-            },
-            effect(x) {
-                return new Decimal(4).div(x.plus(1))
-            },
-            canAfford() {
-                return player[this.layer].intelligence.gte(this.cost())
-            },
+            title() { return `Upgrade Interval` },
+            display() { return `<b>Interval</b>: ${formatTime(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.` },
+            tooltip() { return `The interval is how quickly the robot can purnase their designated upgrade.` },
+            cost() { return getIntCost(this.id) },
+            effect(x) { return new Decimal(4).div(x.plus(1)) },
+            canAfford() { return player[this.layer].intelligence.gte(this.cost()) },
             buy() {
                 if(this.canAfford()) {
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -126,24 +115,12 @@ addLayer("auto", {
             }
         },
         12: {
-            title() {
-                return `Upgrade Magnitude`
-            },
-            display() {
-                return `<b>Magnitude</b>: ${formatWhole(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
-            },
-            tooltip() {
-                return `The magnitude is how many the robot can purnase at once.`
-            },
-            cost() {
-                return getMagCost(this.id)
-            },
-            effect(x) {
-                return player[this.layer].activeRankbot ? new Decimal(x).pow(2).plus(1).pow(upgradeEffect("tr", 23)) : new Decimal(0)
-            },
-            canAfford() {
-                return player[this.layer].intelligence.gte(this.cost())
-            },
+            title() { return `Upgrade Magnitude` },
+            display() { return `<b>Magnitude</b>: ${format(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.` },
+            tooltip() { return `The magnitude is how many the robot can purnase at once.` },
+            cost() { return getMagCost(this.id) },
+            effect(x) { return player[this.layer].activeRankbot ? new Decimal(x).pow(2).plus(1).pow(upgradeEffect("tr", 23)) : new Decimal(0) },
+            canAfford() { return player[this.layer].intelligence.gte(this.cost()) },
             buy() {
                 if(this.canAfford()) {
                     setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
@@ -182,7 +159,7 @@ addLayer("auto", {
                 return `Upgrade Magnitude`
             },
             display() {
-                return `<b>Magnitude</b>: ${formatWhole(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
+                return `<b>Magnitude</b>: ${format(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
             },
             tooltip() {
                 return `The magnitude is how many the robot can purnase at once.`
@@ -234,7 +211,7 @@ addLayer("auto", {
                 return `Upgrade Magnitude`
             },
             display() {
-                return `<b>Magnitude</b>: ${formatWhole(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
+                return `<b>Magnitude</b>: ${format(this.effect())}<br>Cost: ${formatWhole(this.cost())} intelligence.`
             },
             tooltip() {
                 return `The magnitude is how many the robot can purnase at once.`

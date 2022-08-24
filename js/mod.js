@@ -3,7 +3,7 @@ let modInfo = {
 	id: "mymod",
 	author: "LarceQuee",
 	pointsName: "nothing",
-	modFiles: ["layers.js", "tree.js", "reward.js", "functions.js", "achievements.js","automation.js"],
+	modFiles: ["layers/main.js", "layers/rockets.js", "layers/tr.js", "layers/collapse.js", "layers/pathogens.js", "layers.js", "tree.js", "reward.js", "functions.js", "achievements.js", "automation.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,14 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.5",
-	name: "Dimension of Collapse",
+	num: "0.6",
+	name: "Micro Pathogens",
 }
 
 let changelog = `<h1>Changelog:</h1><br><br>
+	<font size=5 color="orange">v0.6</font><br>
+		- Added new Row Achievements.<br>
+		- Added Pathogen Layer.<br>
+		- Added 10 Buyables.<br>
+		- Added Scaling cost in Ranks, Tiers and Rocket Fuels.<br>
+		- Changed overlay head to view unlocking new things.<br>
+		- Rework automation code.<br>
+		- Current endgame 1e128 uni distance.<br>
 	<font size=5 color="orange">v0.5</font><br>
 		- Added new Row Achievements.<br>
-		- Added Universal Collapse layer.
+		- Added Universal Collapse layer.<br>
 		- Added 12 Milestones.<br>
 		- Added a new Fuelbot in Automation layer.<br>
 		- Current endgame 250000 Cavaders.<br>
@@ -59,7 +67,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return true
+	return false
 }
 
 // Calculate points/sec!
@@ -73,15 +81,34 @@ function getPointGen() {
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	
 }}
-
+function displayTextThing() {
+	//if (!player.p.unlocked) {
+	//	let req = new Decimal(2.5e5)
+	//	let total = player.uc.points.plus(1).log10().div(req.log10()).times(100)
+	//	return`Reach 2e5 cadavers to unlock pathogens (${format(total)}%)`
+	//}
+	let req = new Decimal(4.4e26).times(1e128)
+	let total = player.m.points.plus(1).log10().div(req.log10()).times(100)
+	return `Reach 1e128 uni to end current game (${format(total)}%)`
+}
 // Display extra things at the top of the page
 var displayThings = [
+	function() {
+		if (!tmp.r.layerShown) return `Reach 50 Mm to unlock rockets (${format(player.m.points.add(1).log10().div(tmp.r.requires.log10()).times(100))}%)`
+		if (!tmp.auto.layerShown) return `Reach 1 Tm to unlock automation (${format(player.m.points.add(1).log10().div(tmp.auto.requires.log10()).times(100))}%)`
+		if (!tmp.tr.layerShown) return `Reach 1 ly to unlock time reversal (${format(player.m.points.add(1).log10().div(tmp.tr.requires.log10()).times(100))}%)`
+		if (!tmp.uc.layerShown) return `Reach 50 Mpc to unlock collapse (${format(player.m.points.add(1).log10().div(tmp.uc.requires.log10()).times(100))}%)`
+		if (!tmp.p.layerShown) return `Reach 2.5e5 Cadavers to unlock pathogens (${format(player.uc.points.add(1).log10().div(tmp.p.requires.log10()).times(100))}%)`
+		if (player.m.points.lte(DISTANCE.uni*1e128)) return `Reach 1e128 uni to unlock dark circles (${format(player.m.points.add(1).log10().div(Decimal.log10(DISTANCE.uni * 1e128)).times(100))}%)`
+		return `Wait for next update.`
+	}
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.uc.points.gte(250000)
+	return player.m.points.gte(DISTANCE.uni * 1e128)
 }
 
 
